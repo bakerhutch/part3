@@ -1,8 +1,12 @@
 const { request } = require('express')
 const express = require('express')
 const app = express()
-
+var morgan = require('morgan')
+morgan.token('payload', (req,res) => {
+  return JSON.stringify(req.body)
+})
 app.use(express.json())
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :payload'))
 
 let persons = [
   { 
@@ -41,7 +45,7 @@ app.get('/info', (req,res) => {
   //show time request was recieved and number of entries at time of request
   const date = new Date()
   const entries = persons.length
-  console.log(`${date} and ${entries} entries.`)
+  //console.log(`${date} and ${entries} entries.`)
   res.send(
     `<div>Phonebook has info for ${entries}</div><div>${date}</div>`
     )
@@ -50,7 +54,7 @@ app.get('/info', (req,res) => {
 app.get('/api/persons/:id', (req,res) => {
   //Convert string to number
   const id = Number(req.params.id)
-  console.log(`GET request of ${id}`)
+  //console.log(`GET request of ${id}`)
   //Object boolean for id existence in persons
   const exist = persons.find(x=>x.id===id)
 
@@ -63,7 +67,7 @@ app.get('/api/persons/:id', (req,res) => {
 
 app.delete('/api/persons/:id', (req,res) => {
   const id = Number(req.params.id)
-  console.log(`DELETE request of ${id}`)
+  //console.log(`DELETE request of ${id}`)
   persons = persons.filter(x=>x.id!=id)
   res.status(204).end()
 })
@@ -77,9 +81,9 @@ const generateId = () => {
 }
 
 app.post('/api/persons', (req, res) => {
-  console.log(req.body)
-  console.log(req.body.name)
-  console.log(req.body.number)
+  //console.log(req.body)
+  //console.log(req.body.name)
+  //console.log(req.body.number)
   //Name or number is missing
   //Name already exists
   if (!req.body.name) {
