@@ -1,10 +1,13 @@
-const { request } = require('express')
 const express = require('express')
 const app = express()
 var morgan = require('morgan')
+const cors = require('cors')
 morgan.token('payload', (req,res) => {
   return JSON.stringify(req.body)
 })
+
+app.use(express.static('build'))
+app.use(cors())
 app.use(express.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :payload'))
 
@@ -91,7 +94,10 @@ app.post('/api/persons', (req, res) => {
   } else if (!req.body.number) {
     res.status(400).json({error: 'Blank number entry.'})
   } else if (persons.filter(x=>x.name===req.body.name).length >= 1) {
-    res.status(400).json({error: 'Name must be unique.'})
+    //Updates phone number
+    person = {...req.body}
+    persons[persons.indexOf(person)] = persons.filter(x=>x.name===req.body.name)
+    res.json(person)
   } else {
     person = {...req.body, 'id': generateId()}
     persons = persons.concat(person)
@@ -99,7 +105,14 @@ app.post('/api/persons', (req, res) => {
   }
 })
 
-const PORT = 3001
+app.put('/api/persons/:id', (req, res) => {
+  id = Number(req.params.id)
+  person = {...req.body}
+  persons[persons.indexOf[person.id]] = person
+  res.json(person)
+})
+
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
