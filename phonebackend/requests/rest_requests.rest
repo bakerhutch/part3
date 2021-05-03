@@ -2,7 +2,7 @@ GET http://localhost:3001/api/persons
 
 ###
 
-GET http://localhost:3001/api/persons/1
+GET http://localhost:3001/api/persons/608847909a069a2b08e9400c
 
 ###
 
@@ -10,7 +10,7 @@ GET http://localhost:3001/info
 
 ###
 
-DELETE http://localhost:3001/api/persons/1
+DELETE http://localhost:3001/api/persons/609015598040bb33a01ac8c4
 
 ###
 
@@ -18,8 +18,18 @@ POST http://localhost:3001/api/persons
 Content-Type: application/json
 
 { 
-    "name": "Brett Daniels", 
-    "number": "123-456-7899"
+    "name": "Vlad Sputnik", 
+    "number": "444-555-1234"
+}
+
+###
+
+PUT http://localhost:3001/api/persons/608847909a069a2b08e9400c
+Content-Type: application/json
+
+{
+    "name": "Brett Daniels",
+    "number": "000-000-1111"
 }
 
 ###

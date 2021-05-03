@@ -1,118 +1,129 @@
-const express = require('express')
-const app = express()
-var morgan = require('morgan')
-const cors = require('cors')
-morgan.token('payload', (req,res) => {
-  return JSON.stringify(req.body)
-})
+require("dotenv").config();
+const express = require("express");
+const app = express();
+var morgan = require("morgan");
+const cors = require("cors");
+const Person = require("./models/person");
+const mongoose = require("mongoose");
+morgan.token("payload", (req, res) => {
+  return JSON.stringify(req.body);
+});
 
-app.use(express.static('build'))
-app.use(cors())
-app.use(express.json())
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :payload'))
+app.use(cors());
+app.use(express.static("build"));
+app.use(express.json());
+app.use(
+  morgan(
+    ":method :url :status :res[content-length] - :response-time ms :payload"
+  )
+);
 
-let persons = [
-  { 
-    "name": "Arto Hellas", 
-    "number": "040-123456",
-    "id": 1
-  },
-  { 
-    "name": "Ada Lovelace", 
-    "number": "39-44-5323523",
-    "id": 2
-  },
-  { 
-    "name": "Dan Abramov", 
-    "number": "12-43-234345",
-    "id": 3
-  },
-  { 
-    "name": "Mary Poppendieck", 
-    "number": "39-23-6423122",
-    "id": 4
-  }
-]
+app.get("/", (req, res) => {
+  res.send("<h1>Working</h1>");
+});
 
-app.get('/', (req,res) => {
-  res.send('<h1>Working</h1>')
-})
-
-app.get('/api/persons', (req,res) => {
+app.get("/api/persons", (req, res) => {
   //Responds with total persons list
-  res.json(persons)
-  console.log(`All persons sent`)
-})
+  Person.find({}).then((persons) => {
+    res.json(persons);
+  })
+});
 
-app.get('/info', (req,res) => {
+app.get("/info", (req, res, next) => {
   //show time request was recieved and number of entries at time of request
-  const date = new Date()
-  const entries = persons.length
-  //console.log(`${date} and ${entries} entries.`)
-  res.send(
-    `<div>Phonebook has info for ${entries}</div><div>${date}</div>`
-    )
-})
+  var date = new Date();
+  var count = Person.find({})
+    .countDocuments((err, count) => {
+      return count;
+    })
+    .then((count) => {
+      res.send(`<div>Phonebook has info for ${count}</div>
+    <div>${date}</div>`);
+    }).catch(error => next(error))
+});
 
-app.get('/api/persons/:id', (req,res) => {
-  //Convert string to number
-  const id = Number(req.params.id)
-  //console.log(`GET request of ${id}`)
-  //Object boolean for id existence in persons
-  const exist = persons.find(x=>x.id===id)
+app.get("/api/persons/:id", (req, res, next) => {
+  Person.findById(req.params.id).then((person) => {
+    if (person) {
+      res.json(person);
+    } else {
+      res.status(404).end()
+    }  
+  }).catch(error => {
+    next(error)
+  })
+});
 
-  if (exist) {
-    res.json(exist)
+app.delete("/api/persons/:id", (req, res, next) => {
+  Person.findByIdAndDelete(req.params.id).then((result)=>{
+    if (result) {
+      res.status(204).end();
+    } else {
+      res.status(400).send({error: 'That entry has already been deleted. Please refresh page to get updated number list'})
+    }
+  }).catch(error => {
+    next(error)
+  })
+});
+
+app.post("/api/persons", (req, res, next) => {
+  //Name or number is missing
+  //Assume multiple entries may contain the same name.
+  const body = req.body
+
+  if (!body.name || !body.number) {
+    res.status(400).json({error: "Incomplete entry."})
   } else {
-    res.status(404).end()
-  }
-})
+  const person = new Person({
+    name: body.name,
+    number: body.number,
+    id: Math.floor(Math.random()*10000)
+  })
 
-app.delete('/api/persons/:id', (req,res) => {
-  const id = Number(req.params.id)
-  //console.log(`DELETE request of ${id}`)
-  persons = persons.filter(x=>x.id!=id)
-  res.status(204).end()
-})
+  person.save().then(savedPerson => {
+    res.json(savedPerson)
+  }).catch(error => next(error))
+}
+});
 
-const generateId = () => {
-  const id = Math.floor(Math.random()*100000)
-  while (!persons.every(x=>x.id!==id)) {
-    id = Math.floor(Math.random()*100000)
-  }
-  return id
+app.put("/api/persons/:id", (req, res, next) => {
+  //Assume not doing this at this time.
+  //This should *ideally* update existing entries of the same name
+  //changeName request handled in frontend
+  const person = {
+    name: req.body.name,
+    number: req.body.number,
+  };
+  //console.log(person)
+  Person.findByIdAndUpdate(req.params.id, person, {
+    new: true,
+    runValidators: true,
+    context: 'query'
+  })
+    .then((updatedNote) => {
+      res.json(updatedNote);
+    })
+    .catch((error) => next(error));
+});
+
+const unknownEndpoint = (req,res) => {
+  res.status(404).send({error: 'unkown endpoint'})
 }
 
-app.post('/api/persons', (req, res) => {
-  //console.log(req.body)
-  //console.log(req.body.name)
-  //console.log(req.body.number)
-  //Name or number is missing
-  //Name already exists
-  if (!req.body.name) {
-    res.status(400).json({error: 'Blank name entry.'})
-  } else if (!req.body.number) {
-    res.status(400).json({error: 'Blank number entry.'})
-  } else if (persons.filter(x=>x.name===req.body.name).length >= 1) {
-    //Updates phone number
-    person = {...req.body}
-    persons[persons.indexOf(person)] = persons.filter(x=>x.name===req.body.name)
-    res.json(person)
-  } else {
-    person = {...req.body, 'id': generateId()}
-    persons = persons.concat(person)
-    res.json(person)
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
-})
+  next(error)
+}
 
-app.put('/api/persons/:id', (req, res) => {
-  id = Number(req.params.id)
-  person = {...req.body}
-  persons[persons.indexOf[person.id]] = person
-  res.json(person)
-})
+app.use(errorHandler)
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+  console.log(`Server running on port ${PORT}`);
+});
