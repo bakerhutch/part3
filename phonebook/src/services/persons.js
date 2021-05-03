@@ -11,19 +11,19 @@ const getAll = () => {
 
 const addEntry = (personObj) => {
     const request = axios.post(baseUrl, personObj)
-    console.log(`Added ${personObj.name} with id: '${personObj.id} to JSON server`)
+    //console.log(`Added ${personObj.name} to JSON server`)
     return request.then(response => response.data)
 }
 
 const delEntry = (id) => {
     const request = axios.delete(`${baseUrl}/${id}`)
-    console.log('DelEntry')
+    //console.log('DelEntry')
     return request.then(response=>response.data)
 }
 
 const changeNumber = (personObj, newNumber) => {
     const newPerson = {...personObj, number: newNumber}
-    console.log('changeNumber')
+    //console.log('changeNumber', newPerson)
     const request = axios.put(`${baseUrl}/${personObj.id}`, newPerson)
     return request.then(response=>response.data)
 }

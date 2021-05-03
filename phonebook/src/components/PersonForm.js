@@ -24,6 +24,9 @@ const PersonForm = ({addName,handleNameChange,handleNumberChange, newName, newNu
         />
       </div>
       <div>
+        'number' entry format: 000-000-0000
+      </div>
+      <div>
         <button type="submit">add</button>
       </div>
     </form>

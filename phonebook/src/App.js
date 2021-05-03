@@ -32,25 +32,40 @@ const App = () => {
     //eslint-disable-next-line
     if (persons.every((x) => x.name != personsObj.name)) {
       //2.15 Adding number to db.json. Will use personService in next exercise
-      personService.addEntry(personsObj).then((response) => {
-        console.log(response);
+      personService.addEntry(personsObj)
+      .then((response) => {
+        //console.log(response);
         setPersons(persons.concat(response));
         setErrorMessage(`${response.name} has been added.`)
         setTimeout(() => {
           setErrorMessage(null)
         }, 3000)
-      });
+      })
+      .catch(error => {
+        setErrorMessage(error.response.data.error)
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+      })
     } else {
       const existPerson = persons.filter(x=>x.name===personsObj.name)
+      //console.log(existPerson[0])
       personService
         .changeNumber(existPerson[0], newNumber)
         .then(response=>{
-          setPersons(persons.map(x=>x.id===response.id ? response : x))
+          setPersons(persons.map(x=>x = x.id===response.id ? response : x))
           setErrorMessage(`${response.name}'s entry has been updated.`)
           setTimeout(() => {
           setErrorMessage(null)
         }, 3000)
-        });
+        })
+        .catch(error => {
+          console.log(error.response.data.error)
+          setErrorMessage(error.response.data.error)
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+        })
     }
     setNewName("");
     setNewNumber("");
@@ -74,7 +89,7 @@ const App = () => {
       personService
         .delEntry(id)
         .then((response) => {
-          console.log(response);
+          console.log(id);
           setPersons(persons.filter((x) => id !== x.id));
         })
         .catch((error)=>{
