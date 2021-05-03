@@ -11,7 +11,7 @@ module.exports = {
 	"rules": {
 		"indent": [
 			"error",
-			"tab"
+			2
 		],
 		"linebreak-style": [
 			"error",
@@ -24,6 +24,14 @@ module.exports = {
 		"semi": [
 			"error",
 			"always"
-		]
+		],
+		'eqeqeq': 'error',
+            'no-trailing-spaces': 'error',
+    'object-curly-spacing': [
+        'error', 'always'
+    ],
+    'arrow-spacing': [
+        'error', { 'before': true, 'after': true }
+    ]
 	}
 };

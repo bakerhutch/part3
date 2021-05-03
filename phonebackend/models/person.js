@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
-var uniqueValidator = require('mongoose-unique-validator');
+var uniqueValidator = require("mongoose-unique-validator");
 
+//eslint-disable-next-line no-undef
 const url = process.env.MONGODB_URI;
 
 console.log("connecting to", url);
@@ -12,6 +13,7 @@ mongoose
     useFindAndModify: false,
     useCreateIndex: true,
   })
+  // eslint-disable-next-line no-unused-vars
   .then((result) => {
     console.log("connected to MongoDB");
   })
@@ -20,8 +22,8 @@ mongoose
   });
 
 const personSchema = new mongoose.Schema({
-  name: {type: String, required: true, unique: true, minlength: 3},
-  number: {type: String, required: true, minlength: 8},
+  name: { type: String, required: true, unique: true, minlength: 3 },
+  number: { type: String, required: true, minlength: 8 },
   id: Number
 });
 
